@@ -1,0 +1,50 @@
+# DISABLED. GitHub Actions only runs `.github/workflows/*.yml`, so this
+# `.yml.disabled` file never triggers. Enable it ONLY after the repository is
+# PUBLIC and GitHub Pages is turned on (Settings -> Pages -> Source: GitHub
+# Actions):
+#
+#     git mv .github/workflows/pages.yml.disabled .github/workflows/pages.yml
+#
+# It builds the Hugo site at the repo root — every doc in this repo is public.
+name: pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: pages
+        uses: actions/configure-pages@v5
+      - uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: latest
+          extended: true
+      - name: Build site
+        run: hugo --minify --baseURL "${{ steps.pages.outputs.base_url }}/"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

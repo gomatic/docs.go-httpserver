@@ -1,11 +1,8 @@
-# DISABLED. GitHub Actions only runs `.github/workflows/*.yml`, so this
-# `.yml.disabled` file never triggers. Enable it ONLY after the repository is
-# PUBLIC and GitHub Pages is turned on (Settings -> Pages -> Source: GitHub
-# Actions):
-#
-#     git mv .github/workflows/pages.yml.disabled .github/workflows/pages.yml
-#
-# It builds the Hugo site at the repo root — every doc in this repo is public.
+# Always present, self-gating: every docs repo carries this identical workflow.
+# While the repository is PRIVATE both jobs skip (GitHub Pages is unavailable on
+# private repos in free orgs), so the run is neutral — no failure, no rename
+# latch. Making the repo public is the only switch: the next push builds and
+# deploys the Hugo site at the repo root (configure-pages enables Pages itself).
 name: pages
 
 on:
@@ -24,11 +21,14 @@ concurrency:
 
 jobs:
   build:
+    if: ${{ !github.event.repository.private }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - id: pages
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - uses: peaceiris/actions-hugo@v3
         with:
           hugo-version: latest
@@ -40,6 +40,7 @@ jobs:
           path: _site
 
   deploy:
+    if: ${{ !github.event.repository.private }}
     needs: build
     runs-on: ubuntu-latest
     environment:

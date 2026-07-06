@@ -68,7 +68,7 @@ func main() {
 
 ### Matching the lifecycle errors
 
-The package declares two sentinels and wraps the underlying cause with [`go-error`](https://github.com/gomatic/go-error), so callers match the *identity* of the failure with [`errors.Is`](https://pkg.go.dev/errors#Is) — never by string:
+The package declares two sentinels and wraps the underlying cause with [`go-error`](https://github.com/gomatic/go-error), so callers match the _identity_ of the failure with [`errors.Is`](https://pkg.go.dev/errors#Is) — never by string:
 
 ```go
 import (
